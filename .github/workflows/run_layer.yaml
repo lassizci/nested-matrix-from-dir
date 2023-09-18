@@ -1,0 +1,37 @@
+name: Run layer in parallel
+
+on:
+  workflow_call:
+    inputs:
+      layer:
+        required: true
+        type: string
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      dirs: ${{ steps.gatherDirs.outputs.dirs }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - id: gatherDirs
+        run: |
+          DIRS=$( find topdir  -maxdepth 1 -mindepth 1 -type d -name ${{ inputs.layer }}-* )
+          DIRS_JSON=$( jq -ncRM '[inputs]' <<< ${DIRS} )
+          echo "dirs=${DIRS_JSON})" >> $GITHUB_OUTPUT
+
+  run-parallel:
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 10
+      matrix:
+        dir: ${{ fromJson(needs.setup.outputs.dirs) }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: echo "[${{ matrix.dir }}] doing nothing really, just sleeping for a minute"
+      - run: sleep 60
+      - run: echo "[${{ matrix.dir }}] done"
+

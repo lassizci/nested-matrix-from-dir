@@ -1,0 +1,31 @@
+name: "Layered parallel workflow runs"
+
+on:
+  push:
+    bhanches:
+      - main
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      layers: ${{ steps.gatherLayers.outputs.layers }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - id: gatherLayers
+        run: |
+          LAYERS=$(find topdir  -maxdepth 1 -mindepth 1 -type d -name '[0-9][0-9]-*' | awk -F'/' '{print $2}' | awk -F'-' '{print $1}' | sort -n -u)
+          LAYERS_JSON=$(jq -ncRM '[inputs]' <<< ${LAYERS})
+          echo "layers=${LAYERS_JSON})" >> $GITHUB_OUTPUT
+
+  run-sequential:
+    needs: setup
+    strategy:
+      max-parallel: 1
+      matrix:
+        layer: ${{ fromJson(needs.setup.outputs.layers) }}
+    uses: ./.github/workflows/run_layer.yaml
+    with:
+      layer: ${{ matrix.layer }}
+    secrets: inherit
