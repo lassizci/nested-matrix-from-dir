@@ -22,6 +22,7 @@ jobs:
           echo "dirs=${DIRS_JSON})" >> $GITHUB_OUTPUT
 
   run-parallel:
+    environment: ~
     needs: setup
     runs-on: ubuntu-latest
     strategy:
