@@ -22,7 +22,7 @@ jobs:
           echo "dirs=${DIRS_JSON})" >> $GITHUB_OUTPUT
 
   run-parallel:
-    environment: ~
+    environment: ${{ inputs.layer }}
     needs: setup
     runs-on: ubuntu-latest
     strategy:
