@@ -13,6 +13,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - uses: ./.github/actions/test-composite
       - id: gatherLayers
         run: |
           LAYERS=$(find topdir  -maxdepth 1 -mindepth 1 -type d -name '[0-9][0-9]-*' | awk -F'/' '{print $2}' | awk -F'-' '{print $1}' | sort -n -u)
